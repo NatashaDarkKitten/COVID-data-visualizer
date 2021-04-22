@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>COVID data visualizer</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+<body>
+<div id="output"></div>
+<button id="showButton" style="width: 200px; height: 100px;"></button>
+
+
+<script>
+    var fun = function () {
+        if (this.readyState === this.DONE) {
+            var statistics = JSON.stringify(this.responseText);
+            localStorage.setItem('statistics', statistics);
+            buttonElement.style.backgroundColor = "Orange";
+        }
+    }
+    const data = null;
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.addEventListener("readystatechange", fun);
+
+    xhr.open("GET", "https://covid-193.p.rapidapi.com/statistics");
+    xhr.setRequestHeader("x-rapidapi-key", "9f93069b03msh6e065e5054ea558p17744ajsn04faf957f7e4");
+    xhr.setRequestHeader("x-rapidapi-host", "covid-193.p.rapidapi.com");
+    xhr.send();
+
+    var dataGridElement = document.getElementById("output");
+    var buttonElement = document.getElementById("showButton");
+
+    function handler(e) {
+        var storageStatistics = JSON.parse(localStorage.getItem('statistics'));
+        dataGridElement.append(storageStatistics);
+        //console.log(typeof storageStatistics);
+    }
+
+    document.getElementById("showButton").onclick = handler;
+
+</script>
+
+</body>
+</html>
