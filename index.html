@@ -1,47 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>COVID data visualizer</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="style.css">
-
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
 </head>
+
 <body>
-<div id="output"></div>
-<button id="showButton" style="width: 200px; height: 100px;"></button>
+    <script>
+        function updateTable() {
 
+            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+            var tbody = document.getElementsByTagName("table")[0].getElementsByTagName('tbody')[0];
+            var tfoot = document.getElementsByTagName("table")[0].getElementsByTagName('tfoot')[0];
 
-<script>
-    var fun = function () {
-        if (this.readyState === this.DONE) {
-            var statistics = JSON.stringify(this.responseText);
-            localStorage.setItem('statistics', statistics);
-            buttonElement.style.backgroundColor = "Orange";
+            var storageStatistics = JSON.parse(localStorage.getItem('statistics'));
+            var dataset = storageStatistics.response;
+
+            for (let i = 0; i < dataset.length; i++) {
+                let columns = Array(14);
+                let row = tbody.insertRow(i);
+
+                for (let j = 0; j < 14; j++) {
+                    columns[j] = row.insertCell(j);
+                }
+
+                columns[0].innerHTML = dataset[i]["continent"];
+                columns[1].innerHTML = dataset[i]["country"];
+                columns[2].innerHTML = dataset[i]["population"];
+
+                columns[3].innerHTML = dataset[i].cases["new"];
+                columns[4].innerHTML = dataset[i].cases["active"];
+                columns[5].innerHTML = dataset[i].cases["critical"];
+                columns[6].innerHTML = dataset[i].cases["recovered"];
+                columns[7].innerHTML = dataset[i].cases["1M_pop"];
+                columns[8].innerHTML = dataset[i].cases["total"];
+
+                columns[9].innerHTML = dataset[i].deaths["new"];
+                columns[10].innerHTML = dataset[i].deaths["1M_pop"];
+                columns[11].innerHTML = dataset[i].deaths["total"];
+
+                columns[12].innerHTML = dataset[i].tests["1M_pop"];
+                columns[13].innerHTML = dataset[i].tests["total"];
+            }
+            tfoot.firstElementChild.firstElementChild.innerHTML = 'Update as of ' + months[+dataset[0].day.slice(5, 7) - 1] + ' ' + dataset[0].day.slice(8, 10) + ', ' + dataset[0].day.slice(0, 4);
         }
-    }
-    const data = null;
-    const xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-    xhr.addEventListener("readystatechange", fun);
 
-    xhr.open("GET", "https://covid-193.p.rapidapi.com/statistics");
-    xhr.setRequestHeader("x-rapidapi-key", "9f93069b03msh6e065e5054ea558p17744ajsn04faf957f7e4");
-    xhr.setRequestHeader("x-rapidapi-host", "covid-193.p.rapidapi.com");
-    xhr.send();
 
-    var dataGridElement = document.getElementById("output");
-    var buttonElement = document.getElementById("showButton");
+        var dateOfLastAPICall = localStorage.getItem('dateAPICall');
 
-    function handler(e) {
-        var storageStatistics = JSON.parse(localStorage.getItem('statistics'));
-        dataGridElement.append(storageStatistics);
-        //console.log(typeof storageStatistics);
-    }
+        var today = new Date();
 
-    document.getElementById("showButton").onclick = handler;
+        if (today.getDay() !== dateOfLastAPICall) {
 
-</script>
+            localStorage.setItem('dateAPICall', today.getDay());
+
+            function fun() {
+                if (this.readyState === this.DONE) {
+                    var statistics = this.responseText;
+                    localStorage.setItem('statistics', statistics);
+                    updateTable();
+                }
+            }
+            const data = null;
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+            xhr.addEventListener("readystatechange", fun);
+
+            xhr.open("GET", "https://covid-193.p.rapidapi.com/statistics");
+            xhr.setRequestHeader("x-rapidapi-key", "9f93069b03msh6e065e5054ea558p17744ajsn04faf957f7e4");
+            xhr.setRequestHeader("x-rapidapi-host", "covid-193.p.rapidapi.com");
+            xhr.send();
+        } else {
+            if (localStorage.getItem('statistics')) {
+                updateTable();
+            }
+        }
+    </script>
+    <div class="container">
+        <table>
+            <caption>Actual COVID data</caption>
+            <thead>
+                <tr>
+                    <th rowspan="2">Continent</th>
+                    <th rowspan="2">Country</th>
+                    <th rowspan="2">Population</th>
+                    <th colspan="6">Cases</th>
+                    <th colspan="3">Deaths</th>
+                    <th colspan="2">Tests</th>
+                </tr>
+                <tr>
+                    <th title='Incidence'>New</th>
+                    <th title='Sick people'>Active</th>
+                    <th title='Critical cases'>Critical</th>
+                    <th title='Recovered'>Recovered</th>
+                    <th title='Total confirmed cases per 1 million population'>1M_pop</th>
+                    <th title='Total number of cases'>Total</th>
+
+                    <th title='New deaths'>New</th>
+                    <th title='Deaths per 1 million'>1M_pop</th>
+                    <th title='Total number of deaths'>Total</th>
+
+                    <th title='Deaths per 1 million'>1M_pop</th>
+                    <th title='Total number of deaths'>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="14"></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <!-- <div>
+        <canvas id="myChart" width="400" height="400"></canvas>
+    </div> -->
+
 
 </body>
+
 </html>
