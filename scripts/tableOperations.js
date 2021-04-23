@@ -14,9 +14,10 @@ function updateTable() {
     let dropDownCountry = document.getElementById("dropDownCountry");
 
     let dataset = storageStatistics.response;
-    let activeCell = document.getElementsByClassName("interactionCellAscending")[0] || document.getElementsByClassName("interactionCellDescending")[0];
+    let activeCell = document.getElementsByClassName(" interactionCellAscending ")[0] || document.getElementsByClassName("interactionCellDescending")[0];
 
     let pathToValue = activeCell.id;
+
     if (pathToValue.indexOf("-")) {
         pathToValue = pathToValue.split("-");
     }
