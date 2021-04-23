@@ -11,11 +11,24 @@
 
 <body>
     <script>
-        function updateTable() {
+        function changeFilterByCountry() {
+            var country = document.getElementById("dropDownCountry").value;
+            updateTable(country);
+        }
+
+        function updateTable(country) {
+
+            var storageStatistics = JSON.parse(localStorage.getItem('statistics'));
+
+            if (country !== "All" && country) {
+                storageStatistics
+            }
 
             var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
             var tbody = document.getElementsByTagName("table")[0].getElementsByTagName('tbody')[0];
             var tfoot = document.getElementsByTagName("table")[0].getElementsByTagName('tfoot')[0];
+            var dropDownCountry = document.getElementById("dropDownCountry");
+
 
             var storageStatistics = JSON.parse(localStorage.getItem('statistics'));
             var dataset = storageStatistics.response;
@@ -27,6 +40,11 @@
                 for (let j = 0; j < 14; j++) {
                     columns[j] = row.insertCell(j);
                 }
+
+                var country = document.createElement('option');
+                country.text = dataset[i]["country"];
+                country.value = dataset[i]["country"];
+                dropDownCountry.add(country);
 
                 columns[0].innerHTML = dataset[i]["continent"];
                 columns[1].innerHTML = dataset[i]["country"];
@@ -51,8 +69,8 @@
 
 
         var dateOfLastAPICall = localStorage.getItem('dateAPICall');
-
         var today = new Date();
+        console.log(today.getDay());
 
         if (today.getDay() !== dateOfLastAPICall) {
 
@@ -84,6 +102,18 @@
         <table>
             <caption>Actual COVID data</caption>
             <thead>
+                <tr>
+                    <th></th>
+                    <th>
+                        <select id="dropDownCountry" onchange="changeFilterByCountry()">  
+                            <option> All </option>
+                            </select>
+                    </th>
+                    <th></th>
+                    <th colspan="6"></th>
+                    <th colspan="3"></th>
+                    <th colspan="2"></th>
+                </tr>
                 <tr>
                     <th rowspan="2">Continent</th>
                     <th rowspan="2">Country</th>

@@ -46,3 +46,18 @@ th {
 td {
     padding: 10px;
 }
+
+select {
+    width: 100%;
+    min-height: 50px;
+    background-color: white;
+    font-size: 18px;
+    padding: 5px;
+}
+
+select option {
+    background-color: white;
+    font-size: 18px;
+    padding: 5px;
+    min-height: 50px;
+}
