@@ -61,3 +61,27 @@ select option {
     padding: 5px;
     min-height: 50px;
 }
+
+.interactionCell {
+    background-color: violet;
+}
+
+.interactionCell:hover {
+    background-color: teal;
+}
+
+.interactionCellAscending {
+    background-color: springgreen;
+}
+
+.interactionCellAscending::after {
+    content: "↓";
+}
+
+.interactionCellDescending {
+    background-color: slategray;
+}
+
+.interactionCellDescending::after {
+    content: "↑";
+}
