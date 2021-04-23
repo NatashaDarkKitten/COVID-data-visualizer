@@ -46,3 +46,42 @@ th {
 td {
     padding: 10px;
 }
+
+select {
+    width: 100%;
+    min-height: 50px;
+    background-color: white;
+    font-size: 18px;
+    padding: 5px;
+}
+
+select option {
+    background-color: white;
+    font-size: 18px;
+    padding: 5px;
+    min-height: 50px;
+}
+
+.interactionCell {
+    background-color: violet;
+}
+
+.interactionCell:hover {
+    background-color: teal;
+}
+
+.interactionCellAscending {
+    background-color: springgreen;
+}
+
+.interactionCellAscending::after {
+    content: "↓";
+}
+
+.interactionCellDescending {
+    background-color: slategray;
+}
+
+.interactionCellDescending::after {
+    content: "↑";
+}
