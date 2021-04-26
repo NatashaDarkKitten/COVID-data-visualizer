@@ -5,9 +5,14 @@
     <meta charset="UTF-8">
     <title>COVID data visualizer</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="styles/style.css">
+    <link rel="stylesheet" type="text/css" href="styles/slider.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script type="text/javascript" language="javascript" src="scripts/APICall.js"></script>
     <script type="text/javascript" language="javascript" src="scripts/tableOperations.js"></script>
+    <script type="text/javascript" language="javascript" src="scripts/UImodificators.js"></script>
+
     <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
 </head>
 
@@ -18,47 +23,60 @@
             <caption>Actual COVID data</caption>
             <thead>
                 <tr>
-                    <th></th>
+                    <th id="lastUpdateCell" colspan="14"></th>
+                </tr>
+                <tr>
+                    <th> <select id="dropDownContinent" onchange="changeFilterByContinent()">  
+                            <option> All </option>
+                            </select>
+                    </th>
                     <th>
                         <select id="dropDownCountry" onchange="changeFilterByCountry()">  
                             <option> All </option>
                             </select>
                     </th>
-                    <th></th>
-                    <th colspan="6"></th>
-                    <th colspan="3"></th>
-                    <th colspan="2"></th>
+                    <th>
+                        <div class="rangeSlider">
+                            <input class="min" name="range_1" type="range" min="1" max="100" value="10" />
+                            <input class="max" name="range_1" type="range" min="1" max="100" value="90" />
+                            <span class="range_min light left">0</span>
+                            <span class="range_max light right">100</span>
+                        </div>
+                    </th>
+                    <th colspan="6">
+                    </th>
+                    <th colspan="3">
+                    </th>
+                    <th colspan="2">
+                    </th>
                 </tr>
                 <tr>
-                    <th id="continent" class="interactionCell textCell" onclick="changeTableDataOrder()" rowspan="2">Continent</th>
-                    <th id="country" class="interactionCell textCell" onclick="changeTableDataOrder()" rowspan="2">Country</th>
-                    <th id="population" class="interactionCell interactionCellAscending" onclick="changeTableDataOrder()" rowspan="2">Population</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'continent')" rowspan="2">Continent</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'country')" rowspan="2">Country</th>
+                    <th class="interactCell interactCellAsc" onclick="changeFieldOrder(event, 'population')" rowspan="2">Population</th>
                     <th colspan="6">Cases</th>
                     <th colspan="3">Deaths</th>
                     <th colspan="2">Tests</th>
                 </tr>
                 <tr>
-                    <th id="cases-new" class="interactionCell" onclick="changeTableDataOrder()" title='Incidence'>New</th>
-                    <th id="cases-active" class="interactionCell" onclick="changeTableDataOrder()" title='Sick people'>Active</th>
-                    <th id="cases-critical" class="interactionCell" onclick="changeTableDataOrder()" title='Critical cases'>Critical</th>
-                    <th id="cases-recovered" class="interactionCell" onclick="changeTableDataOrder()" title='Recovered'>Recovered</th>
-                    <th id="cases-1M_pop" class="interactionCell" onclick="changeTableDataOrder()" title='Total confirmed cases per 1 million population'>1M_pop</th>
-                    <th id="cases-total" class="interactionCell" onclick="changeTableDataOrder()" title='Total number of cases'>Total</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'cases.new')" title='Incidence'>New</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'cases.active')" title='Sick people'>Active</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'cases.critical')" title='Critical cases'>Critical</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'cases.recovered')" title='Recovered'>Recovered</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'cases.1M_pop')" title='Total confirmed cases per 1 million population'>1M_pop</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'cases.total')" title='Total number of cases'>Total</th>
 
-                    <th id="deaths-new" class="interactionCell" onclick="changeTableDataOrder()" title='New deaths'>New</th>
-                    <th id="deaths-1M_pop" class="interactionCell" onclick="changeTableDataOrder()" title='Deaths per 1 million'>1M_pop</th>
-                    <th id="deaths-total" class="interactionCell" onclick="changeTableDataOrder()" title='Total number of deaths'>Total</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'deaths.new')" title='New deaths'>New</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'deaths.1M_pop')" title='Deaths per 1 million'>1M_pop</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'deaths.total')" title='Total number of deaths'>Total</th>
 
-                    <th id="tests-1M_pop" class="interactionCell" onclick="changeTableDataOrder()" title='Deaths per 1 million'>1M_pop</th>
-                    <th id="tests-total" class="interactionCell" onclick="changeTableDataOrder()" title='Total number of deaths'>Total</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'tests.1M_pop')" title='Deaths per 1 million'>1M_pop</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'tests.total')" title='Total number of deaths'>Total</th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
             <tfoot>
-                <tr>
-                    <th colspan="14"></th>
-                </tr>
             </tfoot>
         </table>
     </div>
@@ -67,7 +85,7 @@
         <canvas id="myChart" width="400" height="400"></canvas>
     </div> -->
     <script>
-        updateTable();
+        init();
     </script>
 </body>
 
