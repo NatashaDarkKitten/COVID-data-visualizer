@@ -46,18 +46,17 @@ td {
 
 /* Filter header cells */
 
-select {
+input[type='text'] {
+    font-size: 18px;
+    display: inline-block;
+    margin-top: 0px;
+    margin-left: 0px;
+    box-sizing: border-box;
     width: 100%;
-    min-height: 30px;
-    background-color: white;
-    font-size: 18px;
+    border-width: 0px;
+    border-radius: 0px;
     padding: 5px;
-}
-
-select option {
-    background-color: white;
-    font-size: 18px;
-    padding: 5px;
+    margin: 0px;
 }
 
 

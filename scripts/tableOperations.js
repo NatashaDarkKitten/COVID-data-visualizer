@@ -67,8 +67,49 @@ function init() {
     let temp = JSON.parse(localStorage.getItem('statistics'));
     tableState.dataset = temp.response;
 
-    changeFieldOrder(null, 'country');
 
+    changeFieldOrder(null, 'continent');
+    fillDropDown(tableState.dataset, 'continent');
+
+    changeFieldOrder(null, 'country');
+    fillDropDown(tableState.dataset, 'country');
+
+    updateTable();
+}
+
+function fillDropDown(data, id) {
+    let itemsSet = new Set();
+    let items = document.getElementById(id);
+    for (let i = 0; i < data.length; i++) {
+        itemsSet.add('<option>' + data[i][id] + '</option>');
+    }
+    items.innerHTML = [...itemsSet].join('');
+}
+
+function findField(event, prop) {
+
+    let temp = JSON.parse(localStorage.getItem('statistics'));
+    tableState.dataset = temp.response;
+
+    let soughtObjs = tableState.dataset.filter(item => item[prop] === event.target.value);
+    console.log(soughtObjs);
+
+    if (soughtObjs.length > 0) {
+        tableState.dataset = [...soughtObjs];
+        if (prop === 'country') {
+            // hack
+            document.getElementsByTagName('input')[0].value = '';
+            document.getElementsByTagName('input')[1].value = '';
+
+        } else if (prop === 'continent') {
+            document.getElementsByTagName('input')[0].value = '';
+            document.getElementsByTagName('input')[1].value = '';
+        }
+    } else {
+        let temp = JSON.parse(localStorage.getItem('statistics'));
+        tableState.dataset = temp.response;
+    }
+    changeFieldOrder(null, 'country');
     updateTable();
 }
 
