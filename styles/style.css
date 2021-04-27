@@ -14,10 +14,14 @@ table {
     margin-right: auto;
 }
 
-table,
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
 th,
 td {
-    border-collapse: collapse;
     border: 1px solid black;
 }
 
@@ -29,7 +33,6 @@ table caption {
 
 table thead {
     background-color: #95A5A6;
-    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
@@ -47,7 +50,6 @@ td {
 /* Filter header cells */
 
 input[type='text'] {
-    font-size: 18px;
     display: inline-block;
     margin-top: 0px;
     margin-left: 0px;
@@ -57,6 +59,27 @@ input[type='text'] {
     border-radius: 0px;
     padding: 5px;
     margin: 0px;
+}
+
+.filterCells {
+    background-color: khaki;
+    text-transform: none;
+}
+
+.filterCells input[type='number'] {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 5px;
+}
+
+.filterCells input[type='button'] {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 5px;
+    color: white;
+    background-color: darkslategray;
+    margin: 5%;
+    width: 90%;
 }
 
 
@@ -91,4 +114,11 @@ input[type='text'] {
     font-style: italic;
     background-color: #95A5A6;
     text-transform: none;
+}
+
+.chart {
+    display: inline-block;
+    margin: 1%;
+    width: 31%;
+    height: 100px;
 }
