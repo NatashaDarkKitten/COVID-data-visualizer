@@ -387,6 +387,20 @@ function drawChart(country) {
     );
 }
 
+function getRGB() {
+    let red = Math.floor(Math.random() * 255);
+    let green = Math.floor(Math.random() * 255);
+    let blue = Math.floor(Math.random() * 255);
+    return 'rgb(' + red + ', ' + green + ', ' + blue + ', 0.2)';
+}
+
+function getRGBA() {
+    let red = Math.floor(Math.random() * 255);
+    let green = Math.floor(Math.random() * 255);
+    let blue = Math.floor(Math.random() * 255);
+    return 'rgb(' + red + ', ' + green + ', ' + blue + ', 0.2)';
+}
+
 function getConfig(labels, country) {
     let values = [];
     for (let i = 0; i < labels.length; i++) {
@@ -405,26 +419,16 @@ function getConfig(labels, country) {
                 'rgba(75, 192, 192, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
                 'rgba(153, 102, 255, 0.2)',
-                'rgba(201, 203, 207, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 205, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(54, 162, 235, 0.2)'
+                'rgba(201, 203, 207, 0.2)'
             ],
             borderColor: [
-                'rgb(255, 99, 132)',
-                'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)',
-                'rgb(153, 102, 255)',
-                'rgb(201, 203, 207)',
-                'rgb(255, 99, 132)',
-                'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)'
+                'rgba(255, 99, 132)',
+                'rgba(255, 159, 64)',
+                'rgba(255, 205, 86)',
+                'rgba(75, 192, 192)',
+                'rgba(54, 162, 235)',
+                'rgba(153, 102, 255)',
+                'rgba(201, 203, 207)'
             ],
             borderWidth: 1
         }]
