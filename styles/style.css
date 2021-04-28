@@ -120,5 +120,5 @@ input[type='text'] {
     display: inline-block;
     margin: 1%;
     width: 31%;
-    height: 100px;
+    height: auto;
 }

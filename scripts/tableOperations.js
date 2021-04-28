@@ -9,6 +9,7 @@ let tableState = {
         fieldName: undefined,
         order: undefined
     },
+    filterInfo: [],
     schema: {
         'continent': {
             sortType: 'string'
@@ -59,7 +60,8 @@ let tableState = {
             },
         },
         'day': 'string'
-    }
+    },
+    charts: []
 };
 
 function init() {
@@ -155,12 +157,19 @@ function fillFilterCells() {
             filterCells[i].appendChild(inputNumTo);
         }
 
-        let inputBut = document.createElement('input');
-        inputBut.setAttribute('type', 'button');
-        inputBut.setAttribute('value', 'Discard');
-        inputBut.setAttribute('onclick', 'discardFilter(event)');
+        let discBut = document.createElement('input');
+        discBut.setAttribute('type', 'button');
+        discBut.setAttribute('value', 'Discard');
+        discBut.setAttribute('onclick', 'discardFilter(event)');
 
-        filterCells[i].appendChild(inputBut);
+        filterCells[i].appendChild(discBut);
+
+        let applyBut = document.createElement('input');
+        applyBut.setAttribute('type', 'button');
+        applyBut.setAttribute('value', 'Apply');
+        applyBut.setAttribute('onclick', 'applyFilter(event)');
+
+        filterCells[i].appendChild(applyBut);
     }
 }
 
@@ -181,9 +190,17 @@ function discardFilter(event) {
     if (siblingInputs[0].getAttribute('type') == 'number') {
         siblingInputs[0].value = siblingInputs[0].getAttribute('min');
         siblingInputs[1].value = siblingInputs[1].getAttribute('max');
+        // tableState.filterInfo = tableState.filterInfo.filter((item) => {
+        //     item.
+
+        // })
     } else if (siblingInputs[0].getAttribute('type') == 'text') {
         siblingInputs[0].value = '';
     }
+
+}
+
+function discardFilter(event) {
 
 }
 
@@ -325,19 +342,19 @@ function updateTable() {
 
     let dataFieldNames = ['continent', 'country', 'population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
 
-    // for (let i = 0; i < dataFieldNames.length; i++) {
-    //     if (document.getElementById(dataFieldNames[i] + 'to')) {
-    //         let numFrom = document.getElementById(dataFieldNames[i] + 'from').value;
-    //         let numTo = document.getElementById(dataFieldNames[i] + 'to').value;
-    //         console.log(dataFieldNames[i], " ", numFrom, " ", numTo);
+    for (let i = 0; i < dataFieldNames.length; i++) {
+        if (document.getElementById(dataFieldNames[i] + 'to')) {
+            let numFrom = document.getElementById(dataFieldNames[i] + 'from').value;
+            let numTo = document.getElementById(dataFieldNames[i] + 'to').value;
 
-    //         tempData = tempData.filter((item) => {
-    //             let val = getValueByFieldName(item, dataFieldNames[i]);
-    //             return ((val >= numFrom && val <= numTo) || (val == null) || (val == 'null'));
-    //         });
-    //         console.log(tempData);
-    //     }
-    // }
+            tempData = tempData.filter((item) => {
+                let val = getValueByFieldName(item, dataFieldNames[i]);
+
+                let res = !val || val === 'null' || +val >= numFrom && +val <= numTo;
+                return res;
+            });
+        }
+    }
 
     sortDataset(tableState.dataset, tableState.sortInfo);
 
@@ -355,8 +372,9 @@ function updateTable() {
     }
 
     tbody.innerHTML = tbodyInnerHtml;
-    console.log(tempData);
+
     if (tempData.length == 1) {
+        let chartDivs = document.getElementsByClassName('chart');
         drawChart(tempData[0]);
     }
 }
@@ -368,49 +386,53 @@ function drawChart(country) {
     let labels1 = ['cases.total', 'cases.recovered', 'deaths.total', 'tests.total'];
     let labels2 = ['cases.new', 'cases.active', 'cases.critical', 'deaths.new'];
     let labels3 = ['cases.1M_pop', 'deaths.1M_pop', 'tests.1M_pop'];
+    let labels4 = ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
 
-    let myChart1 = new Chart(
+    if (tableState.charts.length > 0) {
+        for (let i = 0; i < tableState.charts.length; i++) {
+            console.log(tableState.charts[i]);
+            if (tableState.charts[i]) {
+                tableState.charts[i].destroy();
+            }
+        }
+    }
+
+    tableState.charts[0] = new Chart(
         document.getElementById('myChart1'),
         getConfig(labels1, country)
 
     );
 
-    let myChart2 = new Chart(
+    tableState.charts[1] = new Chart(
         document.getElementById('myChart2'),
         getConfig(labels2, country)
     );
 
-    let myChart3 = new Chart(
+    tableState.charts[3] = new Chart(
         document.getElementById('myChart3'),
         getConfig(labels3, country)
 
     );
+
+    tableState.charts[4] = new Chart(
+        document.getElementById('myChart4'),
+        getConfig(labels4, country)
+
+    );
 }
 
-function getRGB() {
-    let red = Math.floor(Math.random() * 255);
-    let green = Math.floor(Math.random() * 255);
-    let blue = Math.floor(Math.random() * 255);
-    return 'rgb(' + red + ', ' + green + ', ' + blue + ', 0.2)';
-}
+function getConfig(labels, field) {
 
-function getRGBA() {
-    let red = Math.floor(Math.random() * 255);
-    let green = Math.floor(Math.random() * 255);
-    let blue = Math.floor(Math.random() * 255);
-    return 'rgb(' + red + ', ' + green + ', ' + blue + ', 0.2)';
-}
+    let values = []
 
-function getConfig(labels, country) {
-    let values = [];
     for (let i = 0; i < labels.length; i++) {
-        values[i] = getValueByFieldName(country, labels[i]);
+        values[i] = getValueByFieldName(field, labels[i]);
     }
 
-    let data = {
+    const data = {
         labels: labels,
         datasets: [{
-            label: 'Data',
+            label: 'Data Set',
             data: values,
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -419,34 +441,51 @@ function getConfig(labels, country) {
                 'rgba(75, 192, 192, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
                 'rgba(153, 102, 255, 0.2)',
+                'rgba(201, 203, 207, 0.2)',
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(255, 205, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
                 'rgba(201, 203, 207, 0.2)'
+
             ],
             borderColor: [
-                'rgba(255, 99, 132)',
-                'rgba(255, 159, 64)',
-                'rgba(255, 205, 86)',
-                'rgba(75, 192, 192)',
-                'rgba(54, 162, 235)',
-                'rgba(153, 102, 255)',
-                'rgba(201, 203, 207)'
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)',
+                'rgb(153, 102, 255)',
+                'rgb(201, 203, 207)',
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)',
+                'rgb(153, 102, 255)',
+                'rgb(201, 203, 207)'
             ],
             borderWidth: 1
         }]
     };
 
-    let config = {
+    const config = {
         type: 'bar',
         data: data,
         options: {
             scales: {
                 y: {
                     beginAtZero: true
-                }
+                },
+                text: "jjj"
             }
         },
     };
 
     return config;
+
 }
 
 function changeActiveCellStyle(event) {
