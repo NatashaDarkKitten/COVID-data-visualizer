@@ -54,11 +54,19 @@ input[type='text'] {
     margin-top: 0px;
     margin-left: 0px;
     box-sizing: border-box;
-    width: 100%;
+    width: 90%;
     border-width: 0px;
     border-radius: 0px;
     padding: 5px;
-    margin: 0px;
+    margin: 5px;
+    border-width: 1px;
+}
+
+th label {
+    display: inline-block;
+    width: 100%;
+    margin-top: 0px;
+    margin-left: 0px;
 }
 
 .filterCells {
@@ -121,4 +129,8 @@ input[type='text'] {
     margin: 1%;
     width: 31%;
     height: auto;
+}
+
+.applyFilter {
+    background-color: lightgreen;
 }
