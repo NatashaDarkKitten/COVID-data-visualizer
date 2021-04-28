@@ -9,7 +9,6 @@ let tableState = {
         fieldName: undefined,
         order: undefined
     },
-    filterInfo: [],
     schema: {
         'continent': {
             sortType: 'string'
@@ -61,7 +60,25 @@ let tableState = {
         },
         'day': 'string'
     },
-    charts: []
+    charts: [],
+    filterInfo: [],
+    filteredData: function() {
+        let filterData = this.dataset.slice();
+        this.filterInfo.forEach(filter => {
+            let f = filter.fieldName;
+            filterData = filterData.filter(item =>
+                +getValueByFieldName(item, f) >= filter.from &&
+                +getValueByFieldName(item, f) <= filter.to ||
+                item[f] === null || item[f] === 'null');
+        });
+
+        return filterData;
+    },
+    getDateString: function() {
+        let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        let dateStr = this.dataset[0].day;
+        return 'Update as of ' + months[dateStr.slice(5, 7) - 1] + ' ' + dateStr.slice(8, 10) + ', ' + dateStr.slice(0, 4);
+    }
 };
 
 function init() {
@@ -78,98 +95,116 @@ function init() {
 function fillFilterCells() {
 
     let data = tableState.dataset;
-    let dataFieldNames = ['continent', 'country', 'population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
+    let dataFieldNames = ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
 
     let filterCells = document.getElementsByClassName('filterCells')[0].children;
 
+
+    let dropDownContinent = document.createElement('input');
+    dropDownContinent.setAttribute('type', 'text');
+    dropDownContinent.setAttribute('list', 'continentlist');
+    dropDownContinent.setAttribute('onchange', 'findField(event, "continent")');
+    dropDownContinent.setAttribute('id', 'continent');
+
+    let datalistContinent = document.createElement('datalist');
+    datalistContinent.setAttribute('id', 'continentlist');
+
+    let tempSortInfo = { fieldName: 'continent', order: order.ASC };
+    sortDataset(data, tempSortInfo);
+
+    let dropDownSet = new Set();
+    for (let j = 0; j < data.length; j++) {
+        dropDownSet.add('<option>' + data[j]['continent'] + '</option>');
+    }
+    datalistContinent.innerHTML = [...dropDownSet].join('');
+
+    filterCells[0].appendChild(dropDownContinent);
+    filterCells[0].appendChild(datalistContinent);
+
+    let dropDownCountry = document.createElement('input');
+    dropDownCountry.setAttribute('type', 'text');
+    dropDownCountry.setAttribute('list', 'countrylist');
+    dropDownCountry.setAttribute('onchange', 'findField(event, "country")');
+    dropDownCountry.setAttribute('id', 'country');
+
+    let datalistCountry = document.createElement('datalist');
+    datalistCountry.setAttribute('id', 'countrylist');
+
+    tempSortInfo = { fieldName: 'country', order: order.ASC };
+    sortDataset(data, tempSortInfo);
+
+    dropDownSet = new Set();
+    for (let j = 0; j < data.length; j++) {
+        dropDownSet.add('<option>' + data[j]['country'] + '</option>');
+    }
+    datalistCountry.innerHTML = [...dropDownSet].join('');
+
+    filterCells[0].appendChild(dropDownCountry);
+    filterCells[0].appendChild(datalistCountry);
+
     for (let i = 0; i < dataFieldNames.length; i++) {
-        if (tableState.schema[dataFieldNames[i]] && tableState.schema[dataFieldNames[i]].sortType == 'string') {
 
-            let dropDown = document.createElement('input');
-            dropDown.setAttribute('type', 'text');
-            dropDown.setAttribute('list', dataFieldNames[i] + 'list');
-            dropDown.setAttribute('onchange', 'findField(event, ' + dataFieldNames[i] + ')');
-            dropDown.setAttribute('id', dataFieldNames[i]);
+        let specificArray = [];
+        let arr = dataFieldNames[i].split('.');
 
+        let currentProp = arr[0];
+        specificArray = data.map(a => a[currentProp]);
 
-            let datalist = document.createElement('datalist');
-            datalist.setAttribute('id', dataFieldNames[i] + 'list');
-
-            let tempSortInfo = { fieldName: dataFieldNames[i], order: order.ASC };
-            sortDataset(data, tempSortInfo);
-
-            let dropDownSet = new Set();
-            for (let j = 0; j < data.length; j++) {
-                dropDownSet.add('<option>' + data[j][dataFieldNames[i]] + '</option>');
-            }
-            datalist.innerHTML = [...dropDownSet].join('');
-
-            filterCells[i].appendChild(dropDown);
-            filterCells[i].appendChild(datalist);
-
-        } else {
-            let specificArray = [];
-            let arr = dataFieldNames[i].split('.');
-
-            let currentProp = arr[0];
-            specificArray = data.map(a => a[currentProp]);
-
-            if (arr.length == 2) {
-                let currentProp = arr[1];
-                specificArray = specificArray.map(a => a[currentProp]);
-            }
-
-            let min = Math.min(...specificArray);
-            let max = Math.max(...specificArray);
-
-            let labelForFrom = document.createElement('label');
-            labelForFrom.setAttribute('for', dataFieldNames[i] + 'from');
-            labelForFrom.innerHTML = 'from';
-
-            let inputNumFrom = document.createElement('input');
-            inputNumFrom.setAttribute('type', 'number');
-            inputNumFrom.setAttribute('id', dataFieldNames[i] + 'from');
-            inputNumFrom.setAttribute('value', min);
-            inputNumFrom.setAttribute('min', min);
-            inputNumFrom.setAttribute('max', max);
-            inputNumFrom.setAttribute('maxlength', max.toString().length);
-            inputNumFrom.setAttribute('oninput', 'limitInput(event)');
-            inputNumFrom.setAttribute('onkeypress', 'return isNumberKey(event)');
-
-            filterCells[i].appendChild(labelForFrom);
-            filterCells[i].appendChild(inputNumFrom);
-
-            let labelForTo = document.createElement('label');
-            labelForTo.setAttribute('for', dataFieldNames[i] + 'to');
-            labelForTo.innerHTML = 'to';
-
-            let inputNumTo = document.createElement('input');
-            inputNumTo.setAttribute('type', 'number');
-            inputNumTo.setAttribute('id', dataFieldNames[i] + 'to');
-            inputNumTo.setAttribute('value', max);
-            inputNumTo.setAttribute('min', min);
-            inputNumTo.setAttribute('max', max);
-            inputNumTo.setAttribute('maxlength', max.toString().length);
-            inputNumTo.setAttribute('oninput', 'limitInput(event)');
-            inputNumTo.setAttribute('onkeypress', 'return isNumberKey(event)');
-
-            filterCells[i].appendChild(labelForTo);
-            filterCells[i].appendChild(inputNumTo);
+        if (arr.length == 2) {
+            let currentProp = arr[1];
+            specificArray = specificArray.map(a => a[currentProp]);
         }
+
+        let min = Math.min(...specificArray);
+        let max = Math.max(...specificArray);
+
+        let labelForFrom = document.createElement('label');
+        labelForFrom.setAttribute('for', dataFieldNames[i] + 'from');
+        labelForFrom.innerHTML = 'from';
+
+        let inputNumFrom = document.createElement('input');
+        inputNumFrom.setAttribute('type', 'number');
+        inputNumFrom.setAttribute('id', dataFieldNames[i] + 'from');
+        inputNumFrom.setAttribute('value', min);
+        inputNumFrom.setAttribute('min', min);
+        inputNumFrom.setAttribute('max', max);
+        inputNumFrom.setAttribute('maxlength', max.toString().length);
+        inputNumFrom.setAttribute('oninput', 'limitInput(event)');
+        inputNumFrom.setAttribute('onkeypress', 'return isNumberKey(event)');
+
+        filterCells[i + 1].appendChild(labelForFrom);
+        filterCells[i + 1].appendChild(inputNumFrom);
+
+        let labelForTo = document.createElement('label');
+        labelForTo.setAttribute('for', dataFieldNames[i] + 'to');
+        labelForTo.innerHTML = 'to';
+
+        let inputNumTo = document.createElement('input');
+        inputNumTo.setAttribute('type', 'number');
+        inputNumTo.setAttribute('id', dataFieldNames[i] + 'to');
+        inputNumTo.setAttribute('value', max);
+        inputNumTo.setAttribute('min', min);
+        inputNumTo.setAttribute('max', max);
+        inputNumTo.setAttribute('maxlength', max.toString().length);
+        inputNumTo.setAttribute('oninput', 'limitInput(event)');
+        inputNumTo.setAttribute('onkeypress', 'return isNumberKey(event)');
+
+        filterCells[i + 1].appendChild(labelForTo);
+        filterCells[i + 1].appendChild(inputNumTo);
 
         let discBut = document.createElement('input');
         discBut.setAttribute('type', 'button');
         discBut.setAttribute('value', 'Discard');
         discBut.setAttribute('onclick', 'discardFilter(event)');
 
-        filterCells[i].appendChild(discBut);
+        filterCells[i + 1].appendChild(discBut);
 
         let applyBut = document.createElement('input');
         applyBut.setAttribute('type', 'button');
         applyBut.setAttribute('value', 'Apply');
         applyBut.setAttribute('onclick', 'applyFilter(event)');
 
-        filterCells[i].appendChild(applyBut);
+        filterCells[i + 1].appendChild(applyBut);
     }
 }
 
@@ -178,30 +213,57 @@ function discardFilter(event) {
     let button = event.target;
     let siblingInputs = [];
     let sibling = button.parentNode.firstChild;
+    button.parentNode.classList.remove('applyFilter');
 
     while (sibling) {
-        if ((sibling.nodeType === 1 && sibling !== button) &&
-            (sibling.getAttribute('type') == 'number' || sibling.getAttribute('type') == 'text')) {
+        if (sibling.nodeType === 1 && sibling.getAttribute('type') === 'number') {
             siblingInputs.push(sibling);
         }
         sibling = sibling.nextSibling;
     }
 
-    if (siblingInputs[0].getAttribute('type') == 'number') {
-        siblingInputs[0].value = siblingInputs[0].getAttribute('min');
-        siblingInputs[1].value = siblingInputs[1].getAttribute('max');
-        // tableState.filterInfo = tableState.filterInfo.filter((item) => {
-        //     item.
+    let min = siblingInputs[0].getAttribute('min');
+    let max = siblingInputs[1].getAttribute('max');
+    siblingInputs[0].value = min;
+    siblingInputs[1].value = max;
 
-        // })
-    } else if (siblingInputs[0].getAttribute('type') == 'text') {
-        siblingInputs[0].value = '';
-    }
+    let idField = siblingInputs[0].getAttribute('id').slice(0, -4);
 
+    tableState.filterInfo = tableState.filterInfo.filter(item => item.fieldName !== idField);
+
+    updateTable();
 }
 
-function discardFilter(event) {
+function applyFilter(event) {
 
+    let button = event.target;
+    let siblingInputs = [];
+    let sibling = button.parentNode.firstChild;
+    button.parentNode.classList.add('applyFilter');
+
+    while (sibling) {
+        if (sibling.nodeType === 1 && sibling.getAttribute('type') === 'number') {
+            siblingInputs.push(sibling);
+        }
+        sibling = sibling.nextSibling;
+    }
+
+    let min = siblingInputs[0].getAttribute('min');
+    let max = siblingInputs[1].getAttribute('max');
+    let idField = siblingInputs[0].getAttribute('id').slice(0, -4);
+
+    min = siblingInputs[0].value;
+    max = siblingInputs[1].value;
+
+    tableState.filterInfo = tableState.filterInfo.filter(item => item.fieldName !== idField);
+
+    tableState.filterInfo.push({
+        fieldName: idField,
+        from: siblingInputs[0].value,
+        to: siblingInputs[1].value
+    });
+
+    updateTable();
 }
 
 function limitInput(event) {
@@ -226,19 +288,19 @@ function findField(event, prop) {
 
     if (event.target.value) {
 
-        let soughtObjs = tableState.dataset.filter(item => item[prop.id] === event.target.value);
+        let soughtObjs = tableState.dataset.filter(item => item[prop] === event.target.value);
 
         if (soughtObjs.length > 0) {
             tableState.dataset = [...soughtObjs];
             let inputElems = document.getElementsByTagName('input');
-            if (prop.id === 'country') {
+            if (prop === 'country') {
                 for (let i = 0; i < inputElems.length; i++) {
                     if (inputElems[i].getAttribute('list') == 'continentlist') {
                         inputElems[i].value = soughtObjs[0].continent;
                     }
                 }
 
-            } else if (prop.id === 'continent') {
+            } else if (prop === 'continent') {
                 for (let i = 0; i < inputElems.length; i++) {
                     if (inputElems[i].getAttribute('list') == 'countrylist') {
                         inputElems[i].value = '';
@@ -329,39 +391,22 @@ function getValueByFieldName(data, fieldName) {
 
 function updateTable() {
 
-    let tempData = [...tableState.dataset];
-
-    let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    const data = tableState.filteredData();
 
     let lastUpdateCell = document.getElementById('lastUpdateCell');
-    lastUpdateCell.innerHTML = 'Update as of ' + months[+tempData[0].day.slice(5, 7) - 1] + ' ' + tempData[0].day.slice(8, 10) + ', ' + tempData[0].day.slice(0, 4);
+    lastUpdateCell.innerHTML = tableState.getDateString();
 
     let tbody = document.getElementsByTagName('tbody')[0];
     let filterCells = document.getElementsByClassName('filterCells');
 
-
     let dataFieldNames = ['continent', 'country', 'population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
 
-    for (let i = 0; i < dataFieldNames.length; i++) {
-        if (document.getElementById(dataFieldNames[i] + 'to')) {
-            let numFrom = document.getElementById(dataFieldNames[i] + 'from').value;
-            let numTo = document.getElementById(dataFieldNames[i] + 'to').value;
-
-            tempData = tempData.filter((item) => {
-                let val = getValueByFieldName(item, dataFieldNames[i]);
-
-                let res = !val || val === 'null' || +val >= numFrom && +val <= numTo;
-                return res;
-            });
-        }
-    }
-
-    sortDataset(tableState.dataset, tableState.sortInfo);
+    sortDataset(data, tableState.sortInfo);
 
     let tbodyInnerHtml = '';
-    for (let i = 0; i < tempData.length; i++) {
+    for (let i = 0; i < data.length; i++) {
 
-        let field = tempData[i];
+        let field = data[i];
         let rowHtml = '<tr>';
         for (let i = 0; i < dataFieldNames.length; i++) {
             rowHtml += '<td>' + getValueByFieldName(field, dataFieldNames[i]) + '</td>';
@@ -373,9 +418,17 @@ function updateTable() {
 
     tbody.innerHTML = tbodyInnerHtml;
 
-    if (tempData.length == 1) {
+    if (tableState.charts.length > 0) {
+        for (let i = 0; i < tableState.charts.length; i++) {
+            if (tableState.charts[i]) {
+                tableState.charts[i].destroy();
+            }
+        }
+    }
+
+    if (data.length === 1) {
         let chartDivs = document.getElementsByClassName('chart');
-        drawChart(tempData[0]);
+        drawChart(data[0]);
     }
 }
 
@@ -387,15 +440,6 @@ function drawChart(country) {
     let labels2 = ['cases.new', 'cases.active', 'cases.critical', 'deaths.new'];
     let labels3 = ['cases.1M_pop', 'deaths.1M_pop', 'tests.1M_pop'];
     let labels4 = ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
-
-    if (tableState.charts.length > 0) {
-        for (let i = 0; i < tableState.charts.length; i++) {
-            console.log(tableState.charts[i]);
-            if (tableState.charts[i]) {
-                tableState.charts[i].destroy();
-            }
-        }
-    }
 
     tableState.charts[0] = new Chart(
         document.getElementById('myChart1'),

@@ -46,20 +46,12 @@
                     <th class="interactCell" onclick="changeFieldOrder(event, 'deaths.1M_pop')" title='Deaths per 1 million'>1M_pop</th>
                     <th class="interactCell" onclick="changeFieldOrder(event, 'deaths.total')" title='Total number of deaths'>Total</th>
 
-                    <th class="interactCell" onclick="changeFieldOrder(event, 'tests.1M_pop')" title='Deaths per 1 million'>1M_pop</th>
-                    <th class="interactCell" onclick="changeFieldOrder(event, 'tests.total')" title='Total number of deaths'>Total</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'tests.1M_pop')" title='Tests per 1 million'>1M_pop</th>
+                    <th class="interactCell" onclick="changeFieldOrder(event, 'tests.total')" title='Total number of test'>Total</th>
                 </tr>
 
                 <tr class="filterCells">
-                    <th>
-                        <!-- <input type="text" name="dropDownContinent" list="continent" onchange="findField(event ,'continent')">
-                        <datalist id="continent">
-                                </datalist> -->
-                    </th>
-                    <th>
-                        <!-- <input type="text" name="dropDownCountry" list="country" onchange="findField(event, 'country')">
-                        <datalist id="country">
-                            </datalist> -->
+                    <th colspan="2">
                     </th>
                     <th>
                     </th>
@@ -107,6 +99,7 @@
         <div class="chart">
             <canvas id="myChart3" width="100" height="70"></canvas>
         </div>
+
         <div>
             <canvas id="myChart4" width="100" height="50"></canvas>
         </div>
