@@ -81,15 +81,179 @@ let tableState = {
     }
 };
 
+let history = {
+    chart: undefined,
+    response: undefined
+}
+
 function init() {
     // hack
     let temp = JSON.parse(localStorage.getItem('statistics'));
     tableState.dataset = temp.response;
 
-    tableState.sortInfo = { fieldName: 'country', order: order.ASC };
+    let tempSortInfo = { fieldName: 'country', order: order.ASC };
+    tableState.sortInfo = tempSortInfo;
 
-    fillFilterCells();
+    initDropDowns();
+
+    // fillFilterCells();
     updateTable();
+}
+
+function initDropDowns() {
+    const dropdown = $('#countrylist');
+    const countries = tableState.dataset.map(item => item.country).sort();
+    countries.forEach(country => {
+        dropdown[0].innerHTML += '<option>' + country + '<option>';
+    });
+}
+
+function viewChartByDate() {
+
+
+    let alert = $('.alert');
+    alert.css("display", "none");
+
+    let country = $('#country').val();
+    let dateFrom = $('#dateFrom').val();
+    let dateTo = $('#dateTo').val();
+
+    if (!country) {
+        showErrMsg('Fill country field');
+        return;
+    }
+
+    const countries = tableState.dataset.map(item => item.country);
+
+    if (!countries.find(item => item == country)) {
+        showErrMsg('No such country found');
+        return;
+    }
+
+
+
+    getHistory(country)
+        .then(response => {
+            history.response = response.response;
+
+            if (dateFrom && dateTo) {
+                history.response = history.response.filter(item =>
+                    isInRange(item.day, dateFrom, dateTo)
+                );
+            }
+
+            console.log(history.response);
+            createChart();
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}
+
+function createChart() {
+    if (history.chart) {
+        history.chart.destroy();
+        history.chart = undefined;
+    }
+
+    const labels = ['population', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.total', 'deaths.total', 'tests.total'];
+    const dates = history.response.map(item => new Date(item.time));
+    const data = {
+        labels: dates,
+        datasets: [{
+                label: labels[0],
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: history.response.map(item => item.population),
+            },
+            {
+                label: labels[1],
+                backgroundColor: 'rgb(255, 159, 64)',
+                borderColor: 'rgb(255, 159, 64)',
+                data: history.response.map(item => item.cases.active),
+            },
+            {
+                label: labels[2],
+                backgroundColor: 'rgb(255, 205, 86)',
+                borderColor: 'rgb(255, 205, 86)',
+                data: history.response.map(item => item.cases.critical),
+            },
+            {
+                label: labels[3],
+                backgroundColor: 'rgb(75, 192, 192)',
+                borderColor: 'rgb(75, 192, 192)',
+                data: history.response.map(item => item.cases.recovered),
+            },
+            {
+                label: labels[4],
+                backgroundColor: 'rgb(54, 162, 235)',
+                borderColor: 'rgb(54, 162, 235)',
+                data: history.response.map(item => item.cases.total),
+            },
+            {
+                label: labels[5],
+                backgroundColor: 'rgb(153, 102, 255)',
+                borderColor: 'rgb(153, 102, 255)',
+                data: history.response.map(item => item.deaths.total),
+            },
+            {
+                label: labels[6],
+                backgroundColor: 'rgb(201, 203, 207)',
+                borderColor: 'rgb(201, 203, 207)',
+                data: history.response.map(item => item.tests.total),
+            }
+        ]
+    };
+
+    const config = {
+        type: 'line',
+        data,
+        options: {
+            elements: {
+                point: {
+                    radius: 0
+                },
+                line: {
+                    borderWidth: 2
+                }
+            }
+        }
+    };
+
+    history.chart = new Chart(
+        document.getElementById('historyChart'),
+        config
+    );
+
+
+}
+
+function showErrMsg(msg) {
+    let alert = $('.alert');
+    alert.css("display", "");
+
+    let errorMessage = $('#errorMessage');
+    errorMessage.html(msg);
+}
+
+function isInRange(date, dateFrom, dateTo) {
+    let dateArray = [];
+
+    if (dateFrom > dateTo) {
+        console.log('From', dateFrom, 'To', dateTo);
+        [dateFrom, dateTo] = [dateTo, dateFrom];
+        console.log('From', dateFrom, 'To', dateTo);
+    }
+    const datain = new Date(date);
+    const datefr = new Date(dateFrom);
+    const dateto = new Date(dateTo);
+
+    if (datain > datefr && datain < dateto) {
+        return true
+    } else return false;
+    // dateArray.push(dateItem.toISOString().slice(0, 10));
+    // dateFrom.setDate(dateFrom.getDate() + 1);
+
 }
 
 function fillFilterCells() {
@@ -434,35 +598,25 @@ function updateTable() {
 
 function drawChart(country) {
 
-    // const labels = ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
+    const labels = [
+        ['cases.total', 'cases.recovered', 'deaths.total', 'tests.total'],
+        ['cases.new', 'cases.active', 'cases.critical', 'deaths.new'],
+        ['cases.1M_pop', 'deaths.1M_pop', 'tests.1M_pop'],
+        // ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'],
+    ];
 
-    let labels1 = ['cases.total', 'cases.recovered', 'deaths.total', 'tests.total'];
-    let labels2 = ['cases.new', 'cases.active', 'cases.critical', 'deaths.new'];
-    let labels3 = ['cases.1M_pop', 'deaths.1M_pop', 'tests.1M_pop'];
-    let labels4 = ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
+    let canvases = Array.from(document.getElementsByClassName('chart'));
+    canvases = canvases.filter(item => item.classList.contains("chart"));
 
-    tableState.charts[0] = new Chart(
-        document.getElementById('myChart1'),
-        getConfig(labels1, country)
+    labels.forEach((labels) => {
+        let chart = canvases.shift().firstChild.nextElementSibling;
 
-    );
-
-    tableState.charts[1] = new Chart(
-        document.getElementById('myChart2'),
-        getConfig(labels2, country)
-    );
-
-    tableState.charts[3] = new Chart(
-        document.getElementById('myChart3'),
-        getConfig(labels3, country)
-
-    );
-
-    tableState.charts[4] = new Chart(
-        document.getElementById('myChart4'),
-        getConfig(labels4, country)
-
-    );
+        tableState.charts.push(
+            new Chart(chart,
+                getConfig(labels, country)
+            )
+        );
+    });
 }
 
 function getConfig(labels, field) {
@@ -522,8 +676,7 @@ function getConfig(labels, field) {
             scales: {
                 y: {
                     beginAtZero: true
-                },
-                text: "jjj"
+                }
             }
         },
     };
