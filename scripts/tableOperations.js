@@ -9,7 +9,7 @@ let tableState = {
         fieldName: undefined,
         order: undefined
     },
-    schema: {
+    schema: { // TODO move out data structure from tableState
         'continent': {
             sortType: 'string'
         },
@@ -62,9 +62,10 @@ let tableState = {
     },
     charts: [],
     filterInfo: [],
-    filteredData: function() {
+
+    filteredData: function() { //
         let filterData = this.dataset.slice();
-        this.filterInfo.forEach(filter => {
+        this.filterInfo.forEach(filter => { // TODO could be optimised via Array.reduce()
             let f = filter.fieldName;
             filterData = filterData.filter(item =>
                 +getValueByFieldName(item, f) >= filter.from &&
@@ -83,7 +84,7 @@ let tableState = {
 
 function init() {
     // hack
-    let temp = JSON.parse(localStorage.getItem('statistics'));
+    let temp = JSON.parse(localStorage.getItem('statistics')); // TODO check if it works for new Users
     tableState.dataset = temp.response;
 
     tableState.sortInfo = { fieldName: 'country', order: order.ASC };
@@ -100,7 +101,7 @@ function fillFilterCells() {
     let filterCells = document.getElementsByClassName('filterCells')[0].children;
 
 
-    let dropDownContinent = document.createElement('input');
+    let dropDownContinent = document.createElement('input'); //TODO  duplicated code. Refactor
     dropDownContinent.setAttribute('type', 'text');
     dropDownContinent.setAttribute('list', 'continentlist');
     dropDownContinent.setAttribute('onchange', 'findField(event, "continent")');
@@ -121,7 +122,7 @@ function fillFilterCells() {
     filterCells[0].appendChild(dropDownContinent);
     filterCells[0].appendChild(datalistContinent);
 
-    let dropDownCountry = document.createElement('input');
+    let dropDownCountry = document.createElement('input'); //TODO  duplicated code. Refactor
     dropDownCountry.setAttribute('type', 'text');
     dropDownCountry.setAttribute('list', 'countrylist');
     dropDownCountry.setAttribute('onchange', 'findField(event, "country")');
@@ -162,7 +163,7 @@ function fillFilterCells() {
         labelForFrom.setAttribute('for', dataFieldNames[i] + 'from');
         labelForFrom.innerHTML = 'from';
 
-        let inputNumFrom = document.createElement('input');
+        let inputNumFrom = document.createElement('input');   //TODO  duplicated code. Refactor
         inputNumFrom.setAttribute('type', 'number');
         inputNumFrom.setAttribute('id', dataFieldNames[i] + 'from');
         inputNumFrom.setAttribute('value', min);
@@ -179,7 +180,7 @@ function fillFilterCells() {
         labelForTo.setAttribute('for', dataFieldNames[i] + 'to');
         labelForTo.innerHTML = 'to';
 
-        let inputNumTo = document.createElement('input');
+        let inputNumTo = document.createElement('input'); //TODO  duplicated code. Refactor
         inputNumTo.setAttribute('type', 'number');
         inputNumTo.setAttribute('id', dataFieldNames[i] + 'to');
         inputNumTo.setAttribute('value', max);
@@ -208,7 +209,7 @@ function fillFilterCells() {
     }
 }
 
-function discardFilter(event) {
+function discardFilter(event) { //TODO  duplicated code. Refactor
 
     let button = event.target;
     let siblingInputs = [];
@@ -234,7 +235,7 @@ function discardFilter(event) {
     updateTable();
 }
 
-function applyFilter(event) {
+function applyFilter(event) { //TODO  duplicated code. Refactor
 
     let button = event.target;
     let siblingInputs = [];
@@ -267,7 +268,7 @@ function applyFilter(event) {
 }
 
 function limitInput(event) {
-    if (event.target.value.length > event.target.maxLength) {
+    if (event.target.value.length > event.target.maxLength) { // move to variable.
         event.target.value = event.target.value.slice(0, event.target.maxLength);
     }
     if (event.target.value.length == 0) {
@@ -319,7 +320,7 @@ function sortDataset(dataset, sortInfo) {
     let fieldName = sortInfo.fieldName;
     let schema = getFieldSchema(fieldName);
 
-    if (schema.sortType === 'number') {
+    if (schema.sortType === 'number') { // TODO refactor this to named functions
         dataset.sort(function(a, b) {
             let x = getValueByFieldName(a, fieldName);
             let y = getValueByFieldName(b, fieldName);
@@ -330,7 +331,7 @@ function sortDataset(dataset, sortInfo) {
         });
     } else {
         dataset.sort(
-            function(a, b) {
+            function(a, b) { // TODO refactor this to named functions
 
                 let x = getValueByFieldName(a, fieldName);
                 let y = getValueByFieldName(b, fieldName);
@@ -399,7 +400,7 @@ function updateTable() {
     let tbody = document.getElementsByTagName('tbody')[0];
     let filterCells = document.getElementsByClassName('filterCells');
 
-    let dataFieldNames = ['continent', 'country', 'population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
+    let dataFieldNames = ['continent', 'country', 'population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total']; // Hard to read move out data structure
 
     sortDataset(data, tableState.sortInfo);
 
@@ -432,7 +433,7 @@ function updateTable() {
     }
 }
 
-function drawChart(country) {
+function drawChart(country) { // move chart to another module
 
     // const labels = ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'];
 
@@ -549,7 +550,7 @@ function changeActiveCellStyle(event) {
         for (let i = 0; i < interactCells.length; i++) {
             let classList = interactCells[i].classList;
 
-            if (classList.contains('interactCellAsc')) { classList.remove('interactCellAsc') } else
+            if (classList.contains('interactCellAsc')) { classList.remove('interactCellAsc') } else // bad practice to write "else" here
             if (classList.contains('interactCellDesc')) { classList.remove('interactCellDesc') }
 
             clkCellClasses.add('interactCellAsc');

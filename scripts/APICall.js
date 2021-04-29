@@ -1,9 +1,9 @@
-function APIcall() {
+function APIcall() { // TODO use fetch and Promise approach
     var dateOfLastAPICall = localStorage.getItem('dateAPICall');
     var today = new Date();
     console.log(today.getDay());
 
-    if (today.getDay() !== dateOfLastAPICall) {
+    if (today.getDay() !== dateOfLastAPICall) { // use timestamps
 
         localStorage.setItem('dateAPICall', today.getDay());
 
