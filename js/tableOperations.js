@@ -87,16 +87,14 @@ let history = {
 }
 
 function init() {
-    // hack
-    let temp = JSON.parse(localStorage.getItem('statistics'));
-    tableState.dataset = temp.response;
+    getStatistics();
+}
 
+function fillDomElems() {
     let tempSortInfo = { fieldName: 'country', order: order.ASC };
     tableState.sortInfo = tempSortInfo;
-
     initDropDowns();
-
-    // fillFilterCells();
+    fillFilterCells();
     updateTable();
 }
 
@@ -114,7 +112,7 @@ function viewChartByDate() {
     let alert = $('.alert');
     alert.css("display", "none");
 
-    let country = $('#country').val();
+    let country = $('#countryh').val();
     let dateFrom = $('#dateFrom').val();
     let dateTo = $('#dateTo').val();
 
@@ -125,12 +123,10 @@ function viewChartByDate() {
 
     const countries = tableState.dataset.map(item => item.country);
 
-    if (!countries.find(item => item == country)) {
+    if (!countries.find(item => item.toLowerCase() == country.toLowerCase())) {
         showErrMsg('No such country found');
         return;
     }
-
-
 
     getHistory(country)
         .then(response => {
@@ -142,7 +138,12 @@ function viewChartByDate() {
                 );
             }
 
-            console.log(history.response);
+            history.response = history.response.sort((a, b) => {
+                let x = new Date(a.time);
+                let y = new Date(b.time);
+                return x > y ? 1 : x < y ? -1 : 0;
+            });
+
             createChart();
         })
         .catch(err => {
@@ -157,52 +158,21 @@ function createChart() {
     }
 
     const labels = ['population', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.total', 'deaths.total', 'tests.total'];
-    const dates = history.response.map(item => new Date(item.time));
+    const colors = ['rgb(255, 99, 132)', 'rgb(255, 159, 64)', 'rgb(255, 205, 86)', 'rgb(75, 192, 192)', 'rgb(54, 162, 235)', 'rgb(153, 102, 255)', 'rgb(201, 203, 207)'];
+    const dates = history.response.map(item => item.time.slice(0, 10));
+
+    let datasets = [];
+    for (let i = 0; i < labels.length; i++) {
+        datasets.push({
+            label: labels[i],
+            backgroundColor: colors[i],
+            borderColor: colors[i],
+            data: history.response.map(item => getValueByFieldName(item, labels[i])),
+        });
+    }
     const data = {
         labels: dates,
-        datasets: [{
-                label: labels[0],
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: history.response.map(item => item.population),
-            },
-            {
-                label: labels[1],
-                backgroundColor: 'rgb(255, 159, 64)',
-                borderColor: 'rgb(255, 159, 64)',
-                data: history.response.map(item => item.cases.active),
-            },
-            {
-                label: labels[2],
-                backgroundColor: 'rgb(255, 205, 86)',
-                borderColor: 'rgb(255, 205, 86)',
-                data: history.response.map(item => item.cases.critical),
-            },
-            {
-                label: labels[3],
-                backgroundColor: 'rgb(75, 192, 192)',
-                borderColor: 'rgb(75, 192, 192)',
-                data: history.response.map(item => item.cases.recovered),
-            },
-            {
-                label: labels[4],
-                backgroundColor: 'rgb(54, 162, 235)',
-                borderColor: 'rgb(54, 162, 235)',
-                data: history.response.map(item => item.cases.total),
-            },
-            {
-                label: labels[5],
-                backgroundColor: 'rgb(153, 102, 255)',
-                borderColor: 'rgb(153, 102, 255)',
-                data: history.response.map(item => item.deaths.total),
-            },
-            {
-                label: labels[6],
-                backgroundColor: 'rgb(201, 203, 207)',
-                borderColor: 'rgb(201, 203, 207)',
-                data: history.response.map(item => item.tests.total),
-            }
-        ]
+        datasets: datasets
     };
 
     const config = {
@@ -240,9 +210,7 @@ function isInRange(date, dateFrom, dateTo) {
     let dateArray = [];
 
     if (dateFrom > dateTo) {
-        console.log('From', dateFrom, 'To', dateTo);
         [dateFrom, dateTo] = [dateTo, dateFrom];
-        console.log('From', dateFrom, 'To', dateTo);
     }
     const datain = new Date(date);
     const datefr = new Date(dateFrom);
@@ -264,14 +232,7 @@ function fillFilterCells() {
     let filterCells = document.getElementsByClassName('filterCells')[0].children;
 
 
-    let dropDownContinent = document.createElement('input');
-    dropDownContinent.setAttribute('type', 'text');
-    dropDownContinent.setAttribute('list', 'continentlist');
-    dropDownContinent.setAttribute('onchange', 'findField(event, "continent")');
-    dropDownContinent.setAttribute('id', 'continent');
-
-    let datalistContinent = document.createElement('datalist');
-    datalistContinent.setAttribute('id', 'continentlist');
+    let datalistContinent = document.getElementById('continentlist');
 
     let tempSortInfo = { fieldName: 'continent', order: order.ASC };
     sortDataset(data, tempSortInfo);
@@ -282,17 +243,7 @@ function fillFilterCells() {
     }
     datalistContinent.innerHTML = [...dropDownSet].join('');
 
-    filterCells[0].appendChild(dropDownContinent);
-    filterCells[0].appendChild(datalistContinent);
-
-    let dropDownCountry = document.createElement('input');
-    dropDownCountry.setAttribute('type', 'text');
-    dropDownCountry.setAttribute('list', 'countrylist');
-    dropDownCountry.setAttribute('onchange', 'findField(event, "country")');
-    dropDownCountry.setAttribute('id', 'country');
-
-    let datalistCountry = document.createElement('datalist');
-    datalistCountry.setAttribute('id', 'countrylist');
+    let datalistCountry = document.getElementById('countrylist');
 
     tempSortInfo = { fieldName: 'country', order: order.ASC };
     sortDataset(data, tempSortInfo);
@@ -302,9 +253,6 @@ function fillFilterCells() {
         dropDownSet.add('<option>' + data[j]['country'] + '</option>');
     }
     datalistCountry.innerHTML = [...dropDownSet].join('');
-
-    filterCells[0].appendChild(dropDownCountry);
-    filterCells[0].appendChild(datalistCountry);
 
     for (let i = 0; i < dataFieldNames.length; i++) {
 
@@ -360,6 +308,7 @@ function fillFilterCells() {
         discBut.setAttribute('type', 'button');
         discBut.setAttribute('value', 'Discard');
         discBut.setAttribute('onclick', 'discardFilter(event)');
+        discBut.setAttribute('class', 'discard');
 
         filterCells[i + 1].appendChild(discBut);
 
@@ -367,6 +316,7 @@ function fillFilterCells() {
         applyBut.setAttribute('type', 'button');
         applyBut.setAttribute('value', 'Apply');
         applyBut.setAttribute('onclick', 'applyFilter(event)');
+        applyBut.setAttribute('class', 'apply');
 
         filterCells[i + 1].appendChild(applyBut);
     }
@@ -445,34 +395,55 @@ function isNumberKey(event) {
     return res;
 }
 
-function findField(event, prop) {
+function findContry(event) {
+    let temp = JSON.parse(localStorage.getItem('statistics'));
+    tableState.dataset = temp.response;
+
+    let selCountry = event.target.value;
+    let continentInput = document.getElementById('continent');
+    continentInput.value = '';
+
+    if (country) {
+
+        let soughtObjs = tableState.dataset.filter(item => {
+            let res = !item.country || item.country.toLowerCase() === selCountry.toLowerCase();
+            return res;
+        });
+
+        if (soughtObjs.length > 0) {
+
+            tableState.dataset = soughtObjs.slice();
+
+
+            continentInput.value = soughtObjs[0].continent;
+        }
+    }
+
+    sortDataset(tableState.dataset, { fieldName: 'country', order: order.ASC });
+    updateTable();
+}
+
+function findContinent(event) {
 
     let temp = JSON.parse(localStorage.getItem('statistics'));
     tableState.dataset = temp.response;
 
-    if (event.target.value) {
+    let selContinent = event.target.value;
+    let countryInput = document.getElementById('country');
 
-        let soughtObjs = tableState.dataset.filter(item => item[prop] === event.target.value);
+    if (selContinent) {
+
+        let soughtObjs = tableState.dataset.filter(item => {
+            let res = !item.continent || item.continent.toLowerCase() === selContinent.toLowerCase();
+            return res;
+        });
 
         if (soughtObjs.length > 0) {
-            tableState.dataset = [...soughtObjs];
-            let inputElems = document.getElementsByTagName('input');
-            if (prop === 'country') {
-                for (let i = 0; i < inputElems.length; i++) {
-                    if (inputElems[i].getAttribute('list') == 'continentlist') {
-                        inputElems[i].value = soughtObjs[0].continent;
-                    }
-                }
-
-            } else if (prop === 'continent') {
-                for (let i = 0; i < inputElems.length; i++) {
-                    if (inputElems[i].getAttribute('list') == 'countrylist') {
-                        inputElems[i].value = '';
-                    }
-                }
-            }
+            tableState.dataset = soughtObjs.slice();
         }
     }
+    console.log(countryInput);
+    countryInput.value = "";
 
     sortDataset(tableState.dataset, { fieldName: 'country', order: order.ASC });
     updateTable();
@@ -602,11 +573,11 @@ function drawChart(country) {
         ['cases.total', 'cases.recovered', 'deaths.total', 'tests.total'],
         ['cases.new', 'cases.active', 'cases.critical', 'deaths.new'],
         ['cases.1M_pop', 'deaths.1M_pop', 'tests.1M_pop'],
-        // ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'],
+        ['population', 'cases.new', 'cases.active', 'cases.critical', 'cases.recovered', 'cases.1M_pop', 'cases.total', 'deaths.new', 'deaths.1M_pop', 'deaths.total', 'tests.1M_pop', 'tests.total'],
     ];
 
     let canvases = Array.from(document.getElementsByClassName('chart'));
-    canvases = canvases.filter(item => item.classList.contains("chart"));
+    canvases = canvases.filter(item => item.classList.contains('chart'));
 
     labels.forEach((labels) => {
         let chart = canvases.shift().firstChild.nextElementSibling;

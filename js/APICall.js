@@ -17,7 +17,36 @@ function getHistory(country) {
 }
 
 function getStatistics() {
+    let lastUpdate = localStorage.getItem('lastUpdate');
+    let lastDate = new Date(lastUpdate);
+    let nowDate = new Date();
 
+    let min15 = 15 * 60 * 1000; //ms
+    if ((lastUpdate && nowDate - lastDate > min15) || !lastUpdate) {
+        fetch("https://covid-193.p.rapidapi.com/statistics", {
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-key": "9f93069b03msh6e065e5054ea558p17744ajsn04faf957f7e4",
+                    "x-rapidapi-host": "covid-193.p.rapidapi.com"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                localStorage.setItem('statistics', JSON.stringify(data));
+                tableState.dataset = data.response;
+                fillDomElems();
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    } else {
+        let temp = JSON.parse(localStorage.getItem('statistics'));
+        tableState.dataset = temp.response;
+        fillDomElems();
+    }
+
+    localStorage.setItem('lastUpdate', nowDate);
 }
 
 
@@ -31,19 +60,6 @@ function getHistory2(event) {
     console.log(country);
     console.log(date);
 
-    fetch("https://covid-193.p.rapidapi.com/countries", {
-            "method": "GET",
-            "headers": {
-                "x-rapidapi-key": "9f93069b03msh6e065e5054ea558p17744ajsn04faf957f7e4",
-                "x-rapidapi-host": "covid-193.p.rapidapi.com"
-            }
-        })
-        .then(response => {
-            console.log(response);
-            localStorage.setItem('statistics', statistics);
-        })
-        .catch(err => {
-            console.error(err);
-        });
+
 
 }

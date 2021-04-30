@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>COVID data visualizer</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 
     <!-- <link type="text/css" rel="stylesheet" media="screen" href="css/bootstrap.min.css">
     <script type="text/javascript" language="javascript" src="js/jquery.min.js"></script>
@@ -23,36 +23,42 @@
 
 <body>
 
-    <div class="container">
+    <div class="container-fluid">
         <h2>Actual COVID data</h2>
-        <p>To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.</p>
+        <p>This site helps to find and display up-to-date statistics on COVID, presents data in different forms, helps to find and filter this data.</p>
 
         <ul class="nav nav-tabs nav-justified">
             <li class="active"><a data-toggle="tab" href="#menu1">Covid history trends</a></li>
             <li><a data-toggle="tab" href="#menu2">Table statistics</a></li>
-            <li><a data-toggle="tab" href="#menu3">Chart statistics by country</a></li>
+            <!-- <li><a data-toggle="tab" href="#menu3">Chart statistics by country</a></li> -->
         </ul>
 
         <div class="tab-content">
             <div id="menu1" class="tab-pane fade in active">
-                <h3>Covid history trends</h3>
-                <p>Select a country (mandatory), start and end dates (optional) to see a graph of sickness rate trends over a period. If there are no dates, the data for the entire available monitored range will be shown.</p>
                 <div class="container">
+                    <h3>Covid history trends</h3>
+                    <p>Select a country (mandatory), start and end dates (optional) to see a graph of sickness rate trends over a period. If there are no dates, the data for the entire available monitored range will be shown.</p>
+
                     <div class="row">
+                        <div class="col-lg-2"></div>
+                        <div class="col-lg-3"><label for="country">Country</label></div>
+                        <div class="col-lg-2"><label for="date_from">From </label></div>
+                        <div class="col-lg-2"><label for="date_to">To </label></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-2"></div>
                         <div class="col-lg-3">
-                            <input class="form-control" type="text" list="countrylist" id="country" placeholder="Country" value="Ukraine">
+                            <input class="form-control" type="text" list="countrylist" id="countryh" placeholder="Country">
                             <datalist id="countrylist"></datalist>
                         </div>
-                        <div class="col-lg-3">
-                            <label for="date_from">From </label>
+                        <div class="col-lg-2">
                             <!-- value="2021-04-01" -->
-                            <input type="date" class="form-control" id="dateFrom" placeholder="Start Date" value="2021-04-01">
+                            <input type="date" class="form-control" id="dateFrom" placeholder="Start Date">
                         </div>
-                        <div class="col-lg-3">
-                            <label for="date_to">To </label>
-                            <input type="date" class="form-control" id="dateTo" placeholder="End Date" value="2021-04-10">
+                        <div class="col-lg-2">
+                            <input type="date" class="form-control" id="dateTo" placeholder="End Date">
                         </div>
-                        <div class="col-lg-3">
+                        <div class="col-lg-1">
                             <input class="btn btn-primary" type="button" value="Find" onclick="viewChartByDate()">
                         </div>
                     </div>
@@ -65,19 +71,18 @@
                             </div>
                         </div>
                     </div>
-
+                    <br><br>
                     <div>
-                        <canvas id="historyChart" width="100" height="70"></canvas>
+                        <canvas id="historyChart" width="100" height="50"></canvas>
                     </div>
-
                 </div>
 
 
 
             </div>
             <div id="menu2" class="tab-pane fade">
-                <h3>Menu 2</h3>
-
+                <h3>Table COVID data</h3>
+                <p>Data for the current day in the form of a table in the possibility of filtering</p>
                 <table class="table table-bordered table-hover">
                     <thead class="thead-dark">
                         <tr>
@@ -110,6 +115,13 @@
 
                         <tr class="filterCells">
                             <th colspan="2">
+                                <label for="continent">Continent</label>
+                                <input type="text" list="continentlist" onchange="findContinent(event)" id="continent">
+                                <datalist id="continentlist"></datalist>
+
+                                <label for="country">Country</label>
+                                <input type="text" list="countrylist" onchange="findContry(event)" id="country">
+                                <datalist id="countrylist"></datalist>
                             </th>
                             <th></th>
                             <th></th>
@@ -131,11 +143,29 @@
                     </tfoot>
                 </table>
 
+                <div>
+                    <div class="chart littl">
+                        <canvas width="100" height="70"></canvas>
+                    </div>
+
+                    <div class="chart littl">
+                        <canvas width="100" height="70"></canvas>
+                    </div>
+
+                    <div class="chart littl">
+                        <canvas width="100" height="70"></canvas>
+                    </div>
+                    <div class="contaner">
+                        <div class="chart">
+                            <canvas width="100" height="50"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="menu3" class="tab-pane fade">
+            <!-- <div id="menu3" class="tab-pane fade">
                 <h3>Menu 3</h3>
 
-            </div>
+            </div> -->
 
         </div>
     </div>
